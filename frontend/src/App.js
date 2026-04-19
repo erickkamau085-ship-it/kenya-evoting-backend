@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 // ============================================
+// API BASE URL - CHANGE THIS TO YOUR RENDER URL
+// ============================================
+const API_URL = 'https://kenya-evoting-backend.onrender.com/api';
+
+// ============================================
 // ELECTION COUNTDOWN COMPONENT
 // ============================================
 const ElectionCountdown = () => {
@@ -327,7 +332,6 @@ const analyticsStyles = {
 // MAIN APP COMPONENT
 // ============================================
 function App() {
-    // State variables
     const [loggedIn, setLoggedIn] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [voterCard, setVoterCard] = useState('');
@@ -415,7 +419,7 @@ function App() {
         }
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         if (voterCard && password && userEmail) {
             sendOTP(userEmail);
@@ -424,15 +428,29 @@ function App() {
         }
     };
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         if (regData.password !== regData.confirm_password) {
             alert('Passwords do not match');
             return;
         }
-        localStorage.setItem('registeredVoter', JSON.stringify(regData));
-        alert('✅ Registration successful! Please login with your Voter Card Number.');
-        setShowRegister(false);
+        
+        try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(regData)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('✅ Registration successful! Please login with your Voter Card Number.');
+                setShowRegister(false);
+            } else {
+                alert(data.error || 'Registration failed');
+            }
+        } catch (error) {
+            alert('Registration failed. Please try again.');
+        }
     };
 
     const handleRegChange = (e) => {
@@ -788,7 +806,6 @@ function App() {
                     </div>
                 </div>
 
-                {/* President Section */}
                 <div style={styles.voteCard}>
                     <h2>👑 President of Kenya</h2>
                     {votes.president && <span style={styles.votedBadge}>✓ Voted</span>}
@@ -804,7 +821,6 @@ function App() {
                     </div>
                 </div>
 
-                {/* Governor Section */}
                 <div style={styles.voteCard}>
                     <h2>🏢 County Governor - {selectedCounty}</h2>
                     {votes.governor && <span style={styles.votedBadge}>✓ Voted</span>}
@@ -825,7 +841,6 @@ function App() {
                     </div>
                 </div>
 
-                {/* MP Section */}
                 <div style={styles.voteCard}>
                     <h2>🏛️ Member of Parliament</h2>
                     {votes.mp && <span style={styles.votedBadge}>✓ Voted</span>}
@@ -840,7 +855,6 @@ function App() {
                     </div>
                 </div>
 
-                {/* Women Rep Section */}
                 <div style={styles.voteCard}>
                     <h2>👩‍⚖️ Women Representative</h2>
                     {votes.womenRep && <span style={styles.votedBadge}>✓ Voted</span>}
@@ -855,7 +869,6 @@ function App() {
                     </div>
                 </div>
 
-                {/* Senator Section */}
                 <div style={styles.voteCard}>
                     <h2>⚖️ Senator</h2>
                     {votes.senator && <span style={styles.votedBadge}>✓ Voted</span>}
@@ -895,7 +908,6 @@ function App() {
                 </div>
             </div>
             
-            {/* Election Countdown */}
             <ElectionCountdown />
             
             <div style={styles.dashboardContent}>
@@ -923,7 +935,6 @@ function App() {
                 </div>
             </div>
             
-            {/* Voter Analytics Dashboard */}
             <VoterAnalytics />
             
             <div style={styles.footer}>
@@ -936,7 +947,7 @@ function App() {
 }
 
 // ============================================
-// MAIN STYLES
+// STYLES
 // ============================================
 
 const styles = {
